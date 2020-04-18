@@ -6,7 +6,7 @@ class Home extends LitElement {
     return html`
     <h1>Home</h1>
     <p>
-      <button type="button" @click="${() => window.store.dispatch({ type: 'navigate.team' })}">
+      <button type="button" @click="${() => this.dispatch({ type: 'navigate.team' })}">
         Go to team page
       </button>
     </p>

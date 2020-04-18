@@ -11,7 +11,7 @@ class Member extends LitElement {
     <h1>${this.model.name}</h1>
     <h2>Class: ${this.model.class}</h2>
     <p>
-      <button type="button" @click="${() => window.store.dispatch({ type: 'navigate.team' })}">
+      <button type="button" @click="${() => this.dispatch({ type: 'navigate.team' })}">
         Go to team page
       </button>
     </p>

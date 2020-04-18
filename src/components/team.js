@@ -16,7 +16,7 @@ class Team extends LitElement {
         <li>
         <button
           type="button"
-          @click="${() => window.store.dispatch({
+          @click="${() => this.dispatch({
             type: 'navigate.member',
             payload: member.id,
           })}"
@@ -25,7 +25,7 @@ class Team extends LitElement {
       `)}
     </ul>
     <p>
-      <button type="button" @click="${() => window.store.dispatch({ type: 'navigate.home' })}">
+      <button type="button" @click="${() => this.dispatch({ type: 'navigate.home' })}">
         Go to home page
       </button>
     </p>
