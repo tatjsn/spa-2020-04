@@ -1,4 +1,5 @@
 import { LitElement, html } from 'https://unpkg.com/@tatjsn/esm@1.3.8/dist/lit-element.js';
+import { fromAction } from '../customEvents.js';
 
 class Team extends LitElement {
   static get properties() {
@@ -14,18 +15,23 @@ class Team extends LitElement {
     <ul>
       ${members.map(member => html`
         <li>
-        <button
-          type="button"
-          @click="${() => this.dispatch({
-            type: 'navigate.member',
-            payload: member.id,
-          })}"
-        >${member.name}</button>
+          <button
+            type="button"
+            @click="${() => this.dispatchEvent(fromAction({
+              type: 'navigate.member',
+              payload: member.id,
+            }))}"
+          >
+            ${member.name}
+          </button>
         </li>
       `)}
     </ul>
     <p>
-      <button type="button" @click="${() => this.dispatch({ type: 'navigate.home' })}">
+      <button
+        type="button"
+        @click="${() => this.dispatchEvent(fromAction({ type: 'navigate.home' }))}"
+      >
         Go to home page
       </button>
     </p>

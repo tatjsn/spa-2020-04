@@ -40,7 +40,11 @@ const modules = {
   },
 }
 
-const wrappedRender = () => render(modules, store.getState(), store.dispatch);
+const appRoot = document.getElementById('app');
+appRoot.addEventListener('action', (event) => {
+  store.dispatch(event.detail);
+});
+const wrappedRender = () => render(appRoot, modules, store.getState(), store.dispatch);
 
 store.subscribe(wrappedRender);
 
