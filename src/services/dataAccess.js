@@ -34,8 +34,10 @@ export async function getMemberById(id) {
   const domparser = new DOMParser();
   const doc = domparser.parseFromString(html, 'text/html');
   const tableBody = doc.querySelectorAll('tbody')[1];
+  const imageTd = tableBody.querySelectorAll('td')[0];
+  const image = imageTd.querySelector('img');
   const classTd = tableBody.querySelectorAll('td')[1];
-  const product = { ...member, class: classTd.firstChild.data };
+  const product = { ...member, class: classTd.firstChild.data, image: image.src };
   if (!cache.memberById) {
     cache.memberById = {};
   }
