@@ -56,18 +56,26 @@ appRoot.addEventListener('action', (event) => {
 appRoot.addEventListener('require', (event) => {
   if (event.detail.startsWith('app-')) {
     const view = event.detail.slice(4);
-    modules[view].setupElement();
+    if (!customElements.get(event.detail)) {
+      modules[view].setupElement();
+    }
     const parentView = event.target.tagName.toLowerCase().slice(4);
-    const prevParentSelect = modules[parentView].select;
-    modules[parentView].select = (state) => {
-      const st = prevParentSelect(state);
-      if (!st.deps) {
-        st.deps = {};
-      }
-      st.deps[view] = modules[view].select(state);
-      return st;
-    };
-    wrappedRender(); // To make new selector effective
+    if (!modules[parentView].registeredDeps) {
+      modules[parentView].registeredDeps = [];
+    }
+    if (!modules[parentView].registeredDeps.includes(view)) {
+      const prevParentSelect = modules[parentView].select;
+      modules[parentView].select = (state) => {
+        const st = prevParentSelect(state);
+        if (!st.deps) {
+          st.deps = {};
+        }
+        st.deps[view] = modules[view].select(state);
+        return st;
+      };
+      wrappedRender(); // To make new selector effective
+      modules[parentView].registeredDeps.push(view);
+    }
     return;  
   }
   modules[event.detail].fetchData(store.getState(), store.dispatch);
