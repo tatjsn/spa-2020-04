@@ -6,9 +6,10 @@ export function fromAction(action) {
   });
 }
 
-export function fromRequire(name) {
+export function fromRequire(name, hostNode) {
+  const host = hostNode.tagName.toLowerCase();
   return new CustomEvent('require', {
-    detail: name,
+    detail: { name, host },
     bubbles: true,
     composed: true,
   });

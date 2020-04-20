@@ -3,9 +3,15 @@ import { LitElement, html } from 'https://unpkg.com/@tatjsn/esm@1.3.8/dist/lit-e
 import { fromAction, fromRequire } from '../customEvents.js';
 
 class Home extends LitElement {
+  static get properties() {
+    return {
+      model: { type: Object },
+    };
+  }
+
   connectedCallback() {
     super.connectedCallback();
-    this.dispatchEvent(fromRequire('app-banner'));
+    this.dispatchEvent(fromRequire('app-banner', this));
   }
 
   render() {

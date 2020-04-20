@@ -1,4 +1,5 @@
 import { LitElement, html } from 'https://unpkg.com/@tatjsn/esm@1.3.8/dist/lit-element.js';
+import { fromRequire } from '../customEvents.js';
 
 class Banner extends LitElement {
   static get properties() {
@@ -7,9 +8,17 @@ class Banner extends LitElement {
     };
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.dispatchEvent(fromRequire('app-message', this));
+  }
+
   render() {
     return html`
-    <p>${this.model.text}</p>
+    <p>
+      Banner
+      <app-message .model="${this.model.deps.message}"></app-banner>
+    </p>
     `;
   }
 }

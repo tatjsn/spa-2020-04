@@ -10,7 +10,7 @@ class Team extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.dispatchEvent(fromRequire('team'));
+    this.dispatchEvent(fromRequire('team', this));
   }
 
   render() {

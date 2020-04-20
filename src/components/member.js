@@ -10,7 +10,7 @@ class Member extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.dispatchEvent(fromRequire('member'));
+    this.dispatchEvent(fromRequire('member', this));
   }
 
   render() {

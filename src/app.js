@@ -44,7 +44,15 @@ const modules = {
       customElements.define('app-banner', Banner);  
     },
     fetchData: () => {},
-    select: state => state.banner,
+    select: () => ({}),
+  },
+  message: {
+    setupElement: async () => {
+      const { Message } = await import('./components/message.js');
+      customElements.define('app-message', Message);  
+    },
+    fetchData: () => {},
+    select: state => state.message,
   },
 }
 
@@ -54,12 +62,12 @@ appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
 });
 appRoot.addEventListener('require', (event) => {
-  if (event.detail.startsWith('app-')) {
-    const view = event.detail.slice(4);
-    if (!customElements.get(event.detail)) {
+  if (event.detail.name.startsWith('app-')) {
+    const view = event.detail.name.slice(4);
+    if (!customElements.get(event.detail.name)) {
       modules[view].setupElement();
     }
-    const parentView = event.target.tagName.toLowerCase().slice(4);
+    const parentView = event.detail.host.slice(4);
     if (!modules[parentView].registeredDeps) {
       modules[parentView].registeredDeps = [];
     }
@@ -71,14 +79,18 @@ appRoot.addEventListener('require', (event) => {
           st.deps = {};
         }
         st.deps[view] = modules[view].select(state);
+        if (!st.deps[view].deps) {
+          st.deps[view].deps = {};
+        }
         return st;
       };
       wrappedRender(); // To make new selector effective
+      console.log('registered', view, 'as child of', parentView);
       modules[parentView].registeredDeps.push(view);
     }
     return;  
   }
-  modules[event.detail].fetchData(store.getState(), store.dispatch);
+  modules[event.detail.name].fetchData(store.getState(), store.dispatch);
 });
 
 store.subscribe(wrappedRender);
