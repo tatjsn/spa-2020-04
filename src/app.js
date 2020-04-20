@@ -38,6 +38,14 @@ const modules = {
     },
     select: state => state.team[state.viewArg],
   },
+  banner: {
+    setupElement: async () => {
+      const { Banner } = await import('./components/banner.js');
+      customElements.define('app-banner', Banner);  
+    },
+    fetchData: () => {},
+    select: state => state.banner,
+  },
 }
 
 const appRoot = document.getElementById('app');
@@ -45,6 +53,10 @@ appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
 });
 appRoot.addEventListener('require', (event) => {
+  if (event.detail.startsWith('app-')) {
+    modules[event.detail.slice(4)].setupElement();
+    return;  
+  }
   modules[event.detail].fetchData(store.getState(), store.dispatch);
 })
 const wrappedRender = () => render(appRoot, modules, store.getState());

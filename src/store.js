@@ -37,4 +37,8 @@ function team(state = {}, action) {
   }
 }
 
+function banner(state = { text: 'Banner Text' }) {
+  return state;
+}
+
 export const store = createStore(combineReducers({ view, viewArg, team }));
