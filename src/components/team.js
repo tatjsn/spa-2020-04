@@ -1,5 +1,5 @@
 import { LitElement, html } from 'https://unpkg.com/@tatjsn/esm@1.3.8/dist/lit-element.js';
-import { fromAction } from '../customEvents.js';
+import { fromAction, fromRequire } from '../customEvents.js';
 
 class Team extends LitElement {
   static get properties() {
@@ -7,6 +7,12 @@ class Team extends LitElement {
       model: { type: Object },
     };
   }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.dispatchEvent(fromRequire('team'));
+  }
+
   render() {
     const members = Object.values(this.model);
     members.sort((a, b) => a.id - b.id);

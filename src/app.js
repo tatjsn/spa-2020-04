@@ -44,7 +44,10 @@ const appRoot = document.getElementById('app');
 appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
 });
-const wrappedRender = () => render(appRoot, modules, store.getState(), store.dispatch);
+appRoot.addEventListener('require', (event) => {
+  modules[event.detail].fetchData(store.getState(), store.dispatch);
+})
+const wrappedRender = () => render(appRoot, modules, store.getState());
 
 store.subscribe(wrappedRender);
 

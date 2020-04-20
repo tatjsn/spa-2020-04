@@ -1,8 +1,8 @@
-export async function render(appRoot, modules, state, dispatch) {
+export async function render(appRoot, modules, state) {
   const { view } = state;
   const tagName = `app-${view}`;
   if (!customElements.get(tagName)) {
-    await modules[view].setupElement();
+    modules[view].setupElement();
   }
 
   const prevView = appRoot.firstChild;
@@ -13,8 +13,6 @@ export async function render(appRoot, modules, state, dispatch) {
       appRoot.removeChild(appRoot.firstChild);
     }
     appRoot.appendChild(element);
-
-    modules[view].fetchData(state, dispatch);
   }
 
   const element = appRoot.firstChild;

@@ -5,3 +5,11 @@ export function fromAction(action) {
     composed: true,
   });
 }
+
+export function fromRequire(name) {
+  return new CustomEvent('require', {
+    detail: name,
+    bubbles: true,
+    composed: true,
+  });
+}
