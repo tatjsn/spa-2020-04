@@ -14,7 +14,7 @@ class Team extends LitElement {
   }
 
   render() {
-    const members = Object.values(this.model);
+    const members = Object.values(this.model.members);
     members.sort((a, b) => a.id - b.id);
     return html`
     <h1>Team</h1>

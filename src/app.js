@@ -7,8 +7,8 @@ const modules = {
       const { Home } = await import('./components/home.js');
       customElements.define('app-home', Home);  
     },
-    fetchData: () => 0,
-    select: () => 0,
+    fetchData: () => {},
+    select: () => ({}),
   },
   team: {
     setupElement: async () => {
@@ -22,7 +22,7 @@ const modules = {
         payload: await getAllMembers(),
       });
     },
-    select: state => state.team,
+    select: state => ({ members: state.team }),
   },
   member: {
     setupElement: async () => {
@@ -49,17 +49,29 @@ const modules = {
 }
 
 const appRoot = document.getElementById('app');
+const wrappedRender = () => render(appRoot, modules, store.getState());
 appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
 });
 appRoot.addEventListener('require', (event) => {
   if (event.detail.startsWith('app-')) {
-    modules[event.detail.slice(4)].setupElement();
+    const view = event.detail.slice(4);
+    modules[view].setupElement();
+    const parentView = event.target.tagName.toLowerCase().slice(4);
+    const prevParentSelect = modules[parentView].select;
+    modules[parentView].select = (state) => {
+      const st = prevParentSelect(state);
+      if (!st.deps) {
+        st.deps = {};
+      }
+      st.deps[view] = modules[view].select(state);
+      return st;
+    };
+    wrappedRender(); // To make new selector effective
     return;  
   }
   modules[event.detail].fetchData(store.getState(), store.dispatch);
-})
-const wrappedRender = () => render(appRoot, modules, store.getState());
+});
 
 store.subscribe(wrappedRender);
 

@@ -9,7 +9,7 @@ class Banner extends LitElement {
 
   render() {
     return html`
-    <p>Banner</p>
+    <p>${this.model.text}</p>
     `;
   }
 }

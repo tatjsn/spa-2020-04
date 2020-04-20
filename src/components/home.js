@@ -10,7 +10,7 @@ class Home extends LitElement {
 
   render() {
     return html`
-    <app-banner></app-banner>
+    <app-banner .model="${this.model.deps.banner}"></app-banner>
     <h1>Home</h1>
     <p>
       <button type="button" @click="${() => this.dispatchEvent(fromAction({ type: 'navigate.team' }))}">

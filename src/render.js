@@ -16,5 +16,9 @@ export async function render(appRoot, modules, state) {
   }
 
   const element = appRoot.firstChild;
-  element.model = modules[view].select(state);
+  const model = modules[view].select(state);
+  if (!model.deps) {
+    model.deps = {};
+  }
+  element.model = model;
 }
