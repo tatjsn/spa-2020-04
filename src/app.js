@@ -1,11 +1,43 @@
 import { store } from './store.js';
 import { render } from './render.js';
 
+function connect(Classe, useFetch = false) {
+  const savedCC = Classe.prototype.connectedCallback;
+  Classe.prototype.connectedCallback = function() {
+    savedCC.call(this);
+    const render = () => {
+      this.model = modules[Classe.name.toLowerCase()].select(store.getState());
+    };
+    this.unsubscribe = store.subscribe(render);
+    render();
+    if (useFetch) {
+      modules[Classe.name.toLowerCase()].fetchData(store.getState(), store.dispatch);
+    }
+  };
+  const savedDC = Classe.prototype.disconnectedCallback;
+  Classe.prototype.disconnectedCallback = function() {
+    savedDC.call(this);
+    this.unsubscribe();
+  }
+}
+
+function setupDependencies(Classe) {
+  if (!Classe.dependencies) {
+    return;
+  }
+  for (const dep of Classe.dependencies) {
+    const name = dep.slice(4);
+    modules[name].setupElement();
+  }
+}
+
 const modules = {
   home: {
     setupElement: async () => {
+      console.log('setup home');
       const { Home } = await import('./components/home.js');
-      customElements.define('app-home', Home);  
+      customElements.define('app-home', Home);
+      setupDependencies(Home);
     },
     fetchData: () => {},
     select: () => ({}),
@@ -13,7 +45,9 @@ const modules = {
   team: {
     setupElement: async () => {
       const { Team } = await import('./components/team.js');
+      connect(Team, true);
       customElements.define('app-team', Team);
+      setupDependencies(Team);
     },
     fetchData: async (state, dispatch) => {
       const { getAllMembers } = await import('./services/dataAccess.js');
@@ -27,7 +61,9 @@ const modules = {
   member: {
     setupElement: async () => {
       const { Member } = await import('./components/member.js');
-      customElements.define('app-member', Member);  
+      connect(Member, true);
+      customElements.define('app-member', Member); 
+      setupDependencies(Member);
     },
     fetchData: async (state, dispatch) => {
       const { getMemberById } = await import('./services/dataAccess.js');
@@ -41,15 +77,19 @@ const modules = {
   banner: {
     setupElement: async () => {
       const { Banner } = await import('./components/banner.js');
-      customElements.define('app-banner', Banner);  
+      customElements.define('app-banner', Banner);
+      setupDependencies(Banner);
     },
     fetchData: () => {},
     select: () => ({}),
   },
   message: {
     setupElement: async () => {
+      console.log('setup message');
       const { Message } = await import('./components/message.js');
+      connect(Message);
       customElements.define('app-message', Message);  
+      setupDependencies(Message);
     },
     fetchData: () => {},
     select: state => state.message,
@@ -60,37 +100,6 @@ const appRoot = document.getElementById('app');
 const wrappedRender = () => render(appRoot, modules, store.getState());
 appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
-});
-appRoot.addEventListener('require', (event) => {
-  if (event.detail.name.startsWith('app-')) {
-    const view = event.detail.name.slice(4);
-    if (!customElements.get(event.detail.name)) {
-      modules[view].setupElement();
-    }
-    const parentView = event.detail.host.slice(4);
-    if (!modules[parentView].registeredDeps) {
-      modules[parentView].registeredDeps = [];
-    }
-    if (!modules[parentView].registeredDeps.includes(view)) {
-      const prevParentSelect = modules[parentView].select;
-      modules[parentView].select = (state) => {
-        const st = prevParentSelect(state);
-        if (!st.deps) {
-          st.deps = {};
-        }
-        st.deps[view] = modules[view].select(state);
-        if (!st.deps[view].deps) {
-          st.deps[view].deps = {};
-        }
-        return st;
-      };
-      wrappedRender(); // To make new selector effective
-      console.log('registered', view, 'as child of', parentView);
-      modules[parentView].registeredDeps.push(view);
-    }
-    return;  
-  }
-  modules[event.detail.name].fetchData(store.getState(), store.dispatch);
 });
 
 store.subscribe(wrappedRender);

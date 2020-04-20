@@ -7,6 +7,11 @@ class Message extends LitElement {
     };
   }
 
+  constructor() {
+    super();
+    this.model = {};
+  }
+
   render() {
     return html`
     <span>Message: ${this.model.text}</span>

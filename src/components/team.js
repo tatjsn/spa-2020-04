@@ -8,9 +8,9 @@ class Team extends LitElement {
     };
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.dispatchEvent(fromRequire('team', this));
+  constructor() {
+    super();
+    this.model = {};
   }
 
   render() {
