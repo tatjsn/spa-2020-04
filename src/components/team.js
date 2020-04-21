@@ -1,5 +1,5 @@
 import { LitElement, html } from 'https://unpkg.com/@tatjsn/esm@1.3.8/dist/lit-element.js';
-import { fromAction, fromRequire } from '../customEvents.js';
+import { fromAction } from '../customEvents.js';
 
 class Team extends LitElement {
   static get properties() {
