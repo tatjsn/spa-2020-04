@@ -1,98 +1,71 @@
 import { store } from './store.js';
-import { render } from './render.js';
+import { Module, ModuleDepot } from './moduleDepot.js';
 
-const modules = {
-  home: {
-    setupElement: async () => {
+const moduleDepot = new ModuleDepot(store);
+moduleDepot.add({
+  'app-home': class extends Module {
+    async setupElement() {
       const { Home } = await import('./components/home.js');
-      customElements.define('app-home', Home);  
-    },
-    fetchData: () => {},
-    select: () => ({}),
+      return Home;
+    }
   },
-  team: {
-    setupElement: async () => {
+  'app-team': class extends Module {
+    async setupElement() {
       const { Team } = await import('./components/team.js');
-      customElements.define('app-team', Team);
-    },
-    fetchData: async (state, dispatch) => {
+      return Team;
+    }
+    async fetchData(state, dispatch) {
       const { getAllMembers } = await import('./services/dataAccess.js');
       dispatch({
         type: 'store.team',
         payload: await getAllMembers(),
       });
-    },
-    select: state => ({ members: state.team }),
+    }
+    select(state) {
+      return { members: state.team };
+    }
   },
-  member: {
-    setupElement: async () => {
+  'app-member': class extends Module {
+    async setupElement() {
       const { Member } = await import('./components/member.js');
-      customElements.define('app-member', Member);  
-    },
-    fetchData: async (state, dispatch) => {
+      return Member;
+    }
+    async fetchData(state, dispatch) {
       const { getMemberById } = await import('./services/dataAccess.js');
       dispatch({
         type: 'store.member',
         payload: await getMemberById(state.viewArg),
       });
-    },
-    select: state => state.team[state.viewArg],
+    }
+    select(state) {
+      const baseModel = state.team[state.viewArg];
+      const isFavourite = state.favourites.includes(baseModel.id);
+      return { ...baseModel, isFavourite };
+    }
   },
-  banner: {
-    setupElement: async () => {
+  'app-banner': class extends Module {
+    async setupElement() {
       const { Banner } = await import('./components/banner.js');
-      customElements.define('app-banner', Banner);  
-    },
-    fetchData: () => {},
-    select: () => ({}),
+      return Banner;
+    }
   },
-  message: {
-    setupElement: async () => {
+  'app-message': class extends Module {
+    async setupElement() {
       const { Message } = await import('./components/message.js');
-      customElements.define('app-message', Message);  
-    },
-    fetchData: () => {},
-    select: state => state.message,
+      return Message;
+    }
+    select(state) {
+      return { text: state.favourites.map(id => state.team[id].name).join() };
+    }
   },
-}
+});
 
 const appRoot = document.getElementById('app');
-const wrappedRender = () => render(appRoot, modules, store.getState());
 appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
 });
-appRoot.addEventListener('require', (event) => {
-  if (event.detail.name.startsWith('app-')) {
-    const view = event.detail.name.slice(4);
-    if (!customElements.get(event.detail.name)) {
-      modules[view].setupElement();
-    }
-    const parentView = event.detail.host.slice(4);
-    if (!modules[parentView].registeredDeps) {
-      modules[parentView].registeredDeps = [];
-    }
-    if (!modules[parentView].registeredDeps.includes(view)) {
-      const prevParentSelect = modules[parentView].select;
-      modules[parentView].select = (state) => {
-        const st = prevParentSelect(state);
-        if (!st.deps) {
-          st.deps = {};
-        }
-        st.deps[view] = modules[view].select(state);
-        if (!st.deps[view].deps) {
-          st.deps[view].deps = {};
-        }
-        return st;
-      };
-      wrappedRender(); // To make new selector effective
-      console.log('registered', view, 'as child of', parentView);
-      modules[parentView].registeredDeps.push(view);
-    }
-    return;  
-  }
-  modules[event.detail.name].fetchData(store.getState(), store.dispatch);
-});
 
+const wrappedRender = () => moduleDepot.render(appRoot);
 store.subscribe(wrappedRender);
 
 wrappedRender();

@@ -1,13 +1,13 @@
 import { createStore, combineReducers } from 'https://unpkg.com/redux@4.0.5/es/redux.mjs';
 
-function view(state = 'home', action) {
+function view(state = 'app-home', action) {
   switch (action.type) {
     case 'navigate.home':
-      return 'home';
+      return 'app-home';
     case 'navigate.team':
-      return 'team';
+      return 'app-team';
     case 'navigate.member':
-      return 'member';
+      return 'app-member';
     default:
       return state;
   }
@@ -37,8 +37,21 @@ function team(state = {}, action) {
   }
 }
 
-function message(state = { text: 'Hello' }) {
-  return state;
+function favourites(state = [], action) {
+  switch (action.type) {
+    case 'favourites.add':
+      return [...state, action.payload];
+    case 'favourites.remove':
+      const result = [];
+      for (const item of state) {
+        if (item !== action.payload) {
+          result.push(item);
+        }
+      }
+      return result;
+    default:
+      return state;
+  }
 }
 
-export const store = createStore(combineReducers({ view, viewArg, team, message }));
+export const store = createStore(combineReducers({ view, viewArg, team, favourites }));
