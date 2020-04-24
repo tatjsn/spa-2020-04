@@ -1,8 +1,8 @@
 import { store } from './store.js';
-import { Module, ModuleStore } from './module.js';
+import { Module, ModuleDepot } from './moduleDepot.js';
 
-const moduleStore = new ModuleStore(store);
-moduleStore.add({
+const moduleDepot = new ModuleDepot(store);
+moduleDepot.add({
   'app-home': class extends Module {
     async setupElement() {
       const { Home } = await import('./components/home.js');
@@ -65,7 +65,7 @@ appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
 });
 
-const wrappedRender = () => moduleStore.render(appRoot);
+const wrappedRender = () => moduleDepot.render(appRoot);
 store.subscribe(wrappedRender);
 
 wrappedRender();

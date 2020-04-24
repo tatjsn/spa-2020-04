@@ -59,7 +59,7 @@ export class Module {
   }
 }
 
-export class ModuleStore {
+export class ModuleDepot {
   constructor(store) {
     this.store = store;
     this.modules = {};
