@@ -13,6 +13,11 @@ class Member extends LitElement {
     this.model = {};
   }
 
+  didFavouriteChange(event) {
+    const type = event.target.checked? 'favourites.add' : 'favourites.remove';
+    this.dispatchEvent(fromAction({ type, payload: this.model.id }));
+  }
+
   render() {
     return html`
     <p style="float:right">
@@ -20,6 +25,10 @@ class Member extends LitElement {
     </p>
     <h1>${this.model.name}</h1>
     <h2>Class: ${this.model.class}</h2>
+    <p>
+      <input type="checkbox" id="checkbox" ?checked="${this.model.isFavourite}", @change="${this.didFavouriteChange}">
+      <label for="checkbox">Favourite</label>
+    </p>
     <p>
       <button type="button" @click="${() => this.dispatchEvent(fromAction({ type: 'navigate.team' }))}">
         Go to team page

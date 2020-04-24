@@ -38,7 +38,9 @@ moduleStore.add({
       });
     }
     select(state) {
-      return state.team[state.viewArg];
+      const baseModel = state.team[state.viewArg];
+      const isFavourite = state.favourites.includes(baseModel.id);
+      return { ...baseModel, isFavourite };
     }
   },
   'app-banner': class extends Module {
@@ -53,7 +55,7 @@ moduleStore.add({
       return Message;
     }
     select(state) {
-      return state.message;
+      return { text: state.favourites.map(id => state.team[id].name).join() };
     }
   },
 });

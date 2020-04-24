@@ -37,8 +37,21 @@ function team(state = {}, action) {
   }
 }
 
-function message(state = { text: 'Hello' }) {
-  return state;
+function favourites(state = [], action) {
+  switch (action.type) {
+    case 'favourites.add':
+      return [...state, action.payload];
+    case 'favourites.remove':
+      const result = [];
+      for (const item of state) {
+        if (item !== action.payload) {
+          result.push(item);
+        }
+      }
+      return result;
+    default:
+      return state;
+  }
 }
 
-export const store = createStore(combineReducers({ view, viewArg, team, message }));
+export const store = createStore(combineReducers({ view, viewArg, team, favourites }));
