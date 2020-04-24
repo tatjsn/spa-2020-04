@@ -10,7 +10,9 @@ export class Module {
       connectedCallback() {
         super.connectedCallback();
         const render = () => {
-          this.model = self.select(self.store.getState());
+          if (!this.didUnsubscribe) {
+            this.model = self.select(self.store.getState());
+          }
         };
         this.unsubscribe = self.store.subscribe(render);
         render();
@@ -21,6 +23,7 @@ export class Module {
       disconnectedCallback() {
         super.disconnectedCallback();
         this.unsubscribe();
+        this.didUnsubscribe = true;
       }
     }
   }
