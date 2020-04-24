@@ -59,11 +59,11 @@ moduleStore.add({
 });
 
 const appRoot = document.getElementById('app');
-const wrappedRender = () => moduleStore.render(appRoot);
 appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
 });
 
+const wrappedRender = () => moduleStore.render(appRoot);
 store.subscribe(wrappedRender);
 
 wrappedRender();

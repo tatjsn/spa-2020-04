@@ -11,7 +11,7 @@ export class Module {
       connectedCallback() {
         super.connectedCallback();
         const render = () => {
-          if (!this.didUnsubscribe) {
+          if (this.unsubscribe) {
             this.model = self.select(self.store.getState());
           }
         };
@@ -24,7 +24,7 @@ export class Module {
       disconnectedCallback() {
         super.disconnectedCallback();
         this.unsubscribe();
-        this.didUnsubscribe = true;
+        delete this.unsubscribe;
       }
     }
   }
