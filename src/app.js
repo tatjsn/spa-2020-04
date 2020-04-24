@@ -1,103 +1,65 @@
 import { store } from './store.js';
-import { render } from './render.js';
+import { Module, ModuleStore } from './module.js';
 
-function connect(Classe, useFetch = false) {
-  const savedCC = Classe.prototype.connectedCallback;
-  Classe.prototype.connectedCallback = function() {
-    savedCC.call(this);
-    const render = () => {
-      this.model = modules[Classe.name.toLowerCase()].select(store.getState());
-    };
-    this.unsubscribe = store.subscribe(render);
-    render();
-    if (useFetch) {
-      modules[Classe.name.toLowerCase()].fetchData(store.getState(), store.dispatch);
-    }
-  };
-  const savedDC = Classe.prototype.disconnectedCallback;
-  Classe.prototype.disconnectedCallback = function() {
-    savedDC.call(this);
-    this.unsubscribe();
-  }
-}
-
-function setupDependencies(Classe) {
-  if (!Classe.dependencies) {
-    return;
-  }
-  for (const dep of Classe.dependencies) {
-    const name = dep.slice(4);
-    modules[name].setupElement();
-  }
-}
-
-const modules = {
-  home: {
-    setupElement: async () => {
-      console.log('setup home');
+const moduleStore = new ModuleStore(store);
+moduleStore.add({
+  home: class extends Module {
+    async setupElement() {
       const { Home } = await import('./components/home.js');
-      customElements.define('app-home', Home);
-      setupDependencies(Home);
-    },
-    fetchData: () => {},
-    select: () => ({}),
+      return ['app-home', Home];
+    }
   },
-  team: {
-    setupElement: async () => {
+  team: class extends Module {
+    async setupElement() {
       const { Team } = await import('./components/team.js');
-      connect(Team, true);
-      customElements.define('app-team', Team);
-      setupDependencies(Team);
-    },
-    fetchData: async (state, dispatch) => {
+      return ['app-team', this.connect(Team, true)];
+    }
+    async fetchData(state, dispatch) {
       const { getAllMembers } = await import('./services/dataAccess.js');
       dispatch({
         type: 'store.team',
         payload: await getAllMembers(),
       });
-    },
-    select: state => ({ members: state.team }),
+    }
+    select(state) {
+      return { members: state.team };
+    }
   },
-  member: {
-    setupElement: async () => {
+  member: class extends Module {
+    async setupElement() {
       const { Member } = await import('./components/member.js');
-      connect(Member, true);
-      customElements.define('app-member', Member); 
-      setupDependencies(Member);
-    },
-    fetchData: async (state, dispatch) => {
+      return ['app-member', this.connect(Member, true)];
+    }
+    async fetchData(state, dispatch) {
       const { getMemberById } = await import('./services/dataAccess.js');
       dispatch({
         type: 'store.member',
         payload: await getMemberById(state.viewArg),
       });
-    },
-    select: state => state.team[state.viewArg],
+    }
+    select(state) {
+      return state.team[state.viewArg];
+    }
   },
-  banner: {
-    setupElement: async () => {
+  banner: class extends Module {
+    async setupElement() {
       const { Banner } = await import('./components/banner.js');
-      customElements.define('app-banner', Banner);
-      setupDependencies(Banner);
-    },
-    fetchData: () => {},
-    select: () => ({}),
+      return ['app-banner', Banner];
+    }
   },
-  message: {
-    setupElement: async () => {
-      console.log('setup message');
+  message: class extends Module {
+    async setupElement() {
       const { Message } = await import('./components/message.js');
-      connect(Message);
-      customElements.define('app-message', Message);  
-      setupDependencies(Message);
-    },
-    fetchData: () => {},
-    select: state => state.message,
+      return ['app-message', this.connect(Message)];
+    }
+    select(state) {
+      return state.message;
+    }
   },
-}
+});
 
 const appRoot = document.getElementById('app');
-const wrappedRender = () => render(appRoot, modules, store.getState());
+const wrappedRender = () => moduleStore.render(appRoot);
 appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
 });

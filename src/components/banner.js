@@ -8,7 +8,7 @@ class Banner extends LitElement {
   render() {
     return html`
     <p>
-      Banner <app-message></app-banner>
+      Banner <app-message></app-message>
     </p>
     `;
   }
