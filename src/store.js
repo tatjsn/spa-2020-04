@@ -1,13 +1,13 @@
 import { createStore, combineReducers } from 'https://unpkg.com/redux@4.0.5/es/redux.mjs';
 
-function view(state = 'home', action) {
+function view(state = 'app-home', action) {
   switch (action.type) {
     case 'navigate.home':
-      return 'home';
+      return 'app-home';
     case 'navigate.team':
-      return 'team';
+      return 'app-team';
     case 'navigate.member':
-      return 'member';
+      return 'app-member';
     default:
       return state;
   }

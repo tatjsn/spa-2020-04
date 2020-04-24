@@ -1,5 +1,6 @@
 export class Module {
-  constructor(modules, store) {
+  constructor(tagName, modules, store) {
+    this.tagName = tagName;
     this.modules = modules;
     this.store = store;
   }
@@ -32,17 +33,21 @@ export class Module {
     if (!Classe.dependencies) {
       return;
     }
-    for (const dep of Classe.dependencies) {
-      const name = dep.slice(4);
-      this.modules[name].setup();
+    for (const tagName of Classe.dependencies) {
+      this.modules[tagName].setup();
     }
   }
 
   async setup() {
-    const [tagName, Classe] = await this.setupElement();
-    Classe.module = this;
-    customElements.define(tagName, Classe);
-    this.setupDependencies(Classe);
+    if (customElements.get(this.tagName)) {
+      return;
+    }
+    const Classe = await this.setupElement();
+    const useSelect = Module.prototype.select !== this.select;
+    const useFetchData = Module.prototype.fetchData !== this.fetchData;
+    const PreparedClass = useSelect? this.connect(Classe, useFetchData): Classe;
+    customElements.define(this.tagName, PreparedClass);
+    this.setupDependencies(PreparedClass);
   }
 
   fetchData(state, dispatch) {
@@ -61,17 +66,14 @@ export class ModuleStore {
   }
 
   add(dict) {
-    for (const [name, Classe] of Object.entries(dict)) {
-      this.modules[name] = new Classe(this.modules, this.store);
+    for (const [tagName, Classe] of Object.entries(dict)) {
+      this.modules[tagName] = new Classe(tagName, this.modules, this.store);
     }
   }
 
   render(appRoot) {
-    const { view } = this.store.getState();
-    const tagName = `app-${view}`;
-    if (!customElements.get(tagName)) {
-      this.modules[view].setup();
-    }
+    const { view: tagName } = this.store.getState();
+    this.modules[tagName].setup();
   
     const prevView = appRoot.firstChild;
   

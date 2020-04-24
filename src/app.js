@@ -3,16 +3,16 @@ import { Module, ModuleStore } from './module.js';
 
 const moduleStore = new ModuleStore(store);
 moduleStore.add({
-  home: class extends Module {
+  'app-home': class extends Module {
     async setupElement() {
       const { Home } = await import('./components/home.js');
-      return ['app-home', Home];
+      return Home;
     }
   },
-  team: class extends Module {
+  'app-team': class extends Module {
     async setupElement() {
       const { Team } = await import('./components/team.js');
-      return ['app-team', this.connect(Team, true)];
+      return Team;
     }
     async fetchData(state, dispatch) {
       const { getAllMembers } = await import('./services/dataAccess.js');
@@ -25,10 +25,10 @@ moduleStore.add({
       return { members: state.team };
     }
   },
-  member: class extends Module {
+  'app-member': class extends Module {
     async setupElement() {
       const { Member } = await import('./components/member.js');
-      return ['app-member', this.connect(Member, true)];
+      return Member;
     }
     async fetchData(state, dispatch) {
       const { getMemberById } = await import('./services/dataAccess.js');
@@ -41,16 +41,16 @@ moduleStore.add({
       return state.team[state.viewArg];
     }
   },
-  banner: class extends Module {
+  'app-banner': class extends Module {
     async setupElement() {
       const { Banner } = await import('./components/banner.js');
-      return ['app-banner', Banner];
+      return Banner;
     }
   },
-  message: class extends Module {
+  'app-message': class extends Module {
     async setupElement() {
       const { Message } = await import('./components/message.js');
-      return ['app-message', this.connect(Message)];
+      return Message;
     }
     select(state) {
       return state.message;
