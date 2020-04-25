@@ -1,6 +1,6 @@
 import { store } from './store.js';
 import { Module, ModuleDepot } from './moduleDepot.js';
-import { openDB } from 'https://unpkg.com/idb?module';
+import { openDB } from 'https://unpkg.com/idb@5.0.2/build/esm/index.js?module';
 
 const moduleDepot = new ModuleDepot(store);
 moduleDepot.add({
