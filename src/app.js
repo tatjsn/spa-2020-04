@@ -73,7 +73,7 @@ async function boot() {
       switch (oldVersion) {
         case 0:
           const store = db.createObjectStore('state', {keyPath: 'id'});
-          store.add({ id: 1, view: 'app-home', viewArg: null });
+          await store.add({ id: 1, view: 'app-home', viewArg: null });
       }
     },
   });
