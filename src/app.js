@@ -1,5 +1,7 @@
 import { store } from './store.js';
 import { Module, ModuleDepot } from './moduleDepot.js';
+import { createBrowserHistory } from 'https://unpkg.com/@tatjsn/esm@1.3.9/dist/history.js';
+
 
 const moduleDepot = new ModuleDepot(store);
 moduleDepot.add({
@@ -65,7 +67,33 @@ appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
 });
 
-const wrappedRender = () => moduleDepot.render(appRoot);
-store.subscribe(wrappedRender);
+const history = createBrowserHistory();
 
-wrappedRender();
+function getViewFromLocation(location) {
+  const paths = location.pathname.split('/');
+  const view = paths[1] || 'home';
+  const viewArg = paths[2] ? +paths[2] : null; // FIXME viewArg should not be a number
+  return { view: `app-${view}`, viewArg };
+}
+
+store.subscribe(() => {
+  moduleDepot.render(appRoot);
+  const { view, viewArg } = store.getState();
+  const { view: viewFromHistory, viewArg: viewArgFromHistory } = getViewFromLocation(history.location);
+  if (view !== viewFromHistory || viewArg !== viewArgFromHistory) {
+    const path = view === 'app-home' ? '' : view.slice(4);
+    const pathWithArg = viewArg ? `${path}/${viewArg}` : path;
+    history.push(`/${pathWithArg}`);
+  }
+});
+
+history.listen((location) => {
+  const { view, viewArg } = store.getState();
+  const { view: viewFromHistory, viewArg: viewArgFromHistory } = getViewFromLocation(location);
+  if (view !== viewFromHistory || viewArg !== viewArgFromHistory) {
+    store.dispatch({ type: `navigate.${viewFromHistory.slice(4)}`, payload: viewArgFromHistory });
+  }
+});
+
+const { view, viewArg } = getViewFromLocation(history.location);
+store.dispatch({ type: `navigate.${view.slice(4)}`, payload: viewArg });

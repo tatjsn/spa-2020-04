@@ -1,6 +1,6 @@
 import { createStore, combineReducers } from 'https://unpkg.com/redux@4.0.5/es/redux.mjs';
 
-function view(state = 'app-home', action) {
+function view(state = null, action) {
   switch (action.type) {
     case 'navigate.home':
       return 'app-home';
