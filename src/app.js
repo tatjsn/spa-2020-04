@@ -1,5 +1,6 @@
 import { store } from './store.js';
 import { Module, ModuleDepot } from './moduleDepot.js';
+import { openDB } from 'https://unpkg.com/idb?module';
 
 const moduleDepot = new ModuleDepot(store);
 moduleDepot.add({
@@ -64,8 +65,29 @@ const appRoot = document.getElementById('app');
 appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
 });
+store.subscribe(() => moduleDepot.render(appRoot));
 
-const wrappedRender = () => moduleDepot.render(appRoot);
-store.subscribe(wrappedRender);
+async function boot() {
+  const db = await openDB('app-db', 1, {
+    async upgrade(db, oldVersion) {
+      switch (oldVersion) {
+        case 0:
+          const store = db.createObjectStore('state', {keyPath: 'id'});
+          store.add({ id: 1, view: 'app-home', viewArg: null });
+      }
+    },
+  });
 
-wrappedRender();
+  const { view, viewArg } = await db.get('state', 1);
+  store.dispatch({ type: `navigate.${view.slice(4)}`, payload: viewArg });
+
+  store.subscribe(async () => {
+    const { view, viewArg } = store.getState();
+    const { view: viewFromDb, viewArg: viewArgFromDb } = await db.get('state', 1);
+    if (view !== viewFromDb || viewArg != viewArgFromDb) {
+      db.put('state', { id: 1, view, viewArg });
+    }
+  });
+}
+
+boot();
