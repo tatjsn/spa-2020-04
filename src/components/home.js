@@ -3,10 +3,6 @@ import { LitElement, html } from 'https://unpkg.com/@tatjsn/esm@1.3.8/dist/lit-e
 import { fromAction } from '../customEvents.js';
 
 class Home extends LitElement {
-  static get dependencies() {
-    return ['app-banner'];
-  }
-
   render() {
     return html`
     <app-banner></app-banner>

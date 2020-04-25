@@ -5,36 +5,43 @@ export class Module {
     this.store = store;
   }
 
-  connect(Classe, useFetch) {
+  connect(Classe, useConnect, useFetch) {
     const self = this;
     return class extends Classe {
+      firstUpdated() {
+        super.firstUpdated();
+        const elements = this.shadowRoot.querySelectorAll("*");
+        for (const element of elements) {
+          if (element.tagName.includes('-')) {
+            const module = self.modules[element.tagName.toLowerCase()];
+            if (module) {
+              module.setup();
+            }
+          }
+        }
+      }
       connectedCallback() {
         super.connectedCallback();
-        const render = () => {
-          if (this.unsubscribe) {
-            this.model = self.select(self.store.getState());
+        if (useConnect) {
+          const render = () => {
+            if (this.unsubscribe) {
+              this.model = self.select(self.store.getState());
+            }
+          };
+          this.unsubscribe = self.store.subscribe(render);
+          render();
+          if (useFetch) {
+            self.fetchData(self.store.getState(), self.store.dispatch);
           }
-        };
-        this.unsubscribe = self.store.subscribe(render);
-        render();
-        if (useFetch) {
-          self.fetchData(self.store.getState(), self.store.dispatch);
         }
       }
       disconnectedCallback() {
         super.disconnectedCallback();
-        this.unsubscribe();
-        delete this.unsubscribe;
+        if (useConnect) {
+          this.unsubscribe();
+          delete this.unsubscribe;
+        }
       }
-    }
-  }
-
-  setupDependencies(Classe) {
-    if (!Classe.dependencies) {
-      return;
-    }
-    for (const tagName of Classe.dependencies) {
-      this.modules[tagName].setup();
     }
   }
 
@@ -45,9 +52,8 @@ export class Module {
     const Classe = await this.setupElement();
     const useSelect = Module.prototype.select !== this.select;
     const useFetchData = Module.prototype.fetchData !== this.fetchData;
-    const PreparedClass = useSelect? this.connect(Classe, useFetchData): Classe;
+    const PreparedClass = this.connect(Classe, useSelect, useFetchData);
     customElements.define(this.tagName, PreparedClass);
-    this.setupDependencies(PreparedClass);
   }
 
   fetchData(state, dispatch) {
