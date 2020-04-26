@@ -1,8 +1,7 @@
-export class Module {
-  constructor(tagName, modules, store, callbacks) {
+class Module {
+  constructor(tagName, modules, callbacks) {
     this.tagName = tagName;
     this.modules = modules;
-    this.store = store;
     this.callbacks = callbacks;
   }
 
@@ -25,14 +24,14 @@ export class Module {
         super.connectedCallback();
         if (useConnect) {
           const render = () => {
-            if (this.unsubscribe) {
-              this.model = self.callbacks.select(self.store.getState());
+            if (this.unsubscribe) { // Guard if already unsubscribed
+              this.model = self.callbacks.select();
             }
           };
-          this.unsubscribe = self.store.subscribe(render);
+          this.unsubscribe = self.callbacks.subscribe(render);
           render();
           if (useFetch) {
-            self.callbacks.fetchData(self.store.getState(), self.store.dispatch);
+            self.callbacks.fetchData();
           }
         }
       }
@@ -56,30 +55,20 @@ export class Module {
     const PreparedClass = this.connect(Classe, useSelect, useFetchData);
     customElements.define(this.tagName, PreparedClass);
   }
-
-  fetchData(state, dispatch) {
-    // Do nothing
-  }
-
-  select() {
-    return {};
-  }
 }
 
 export class Byu {
-  constructor(store) {
-    this.store = store;
+  constructor() {
     this.modules = {};
   }
 
   register(dict) {
     for (const [tagName, callbacks] of Object.entries(dict)) {
-      this.modules[tagName] = new Module(tagName, this.modules, this.store, callbacks);
+      this.modules[tagName] = new Module(tagName, this.modules, callbacks);
     }
   }
 
-  render(appRoot) {
-    const { view: tagName } = this.store.getState();
+  render(appRoot, tagName) {
     this.modules[tagName].setup();
   
     const prevView = appRoot.firstChild;
@@ -92,4 +81,25 @@ export class Byu {
       appRoot.appendChild(element);
     }
   }
+}
+
+export function withRedux(store, dict) {
+  const product = {};
+  for (const [tagName, callbacks] of Object.entries(dict)) {
+    const cbs = {};
+    cbs.subscribe = store.subscribe;
+    cbs.setupElement = callbacks.setupElement;
+    if (callbacks.fetchData) {
+      cbs.fetchData = function () {
+        callbacks.fetchData(store.getState(), store.dispatch);
+      }
+    }
+    if (callbacks.select) {
+      cbs.select = function () {
+        return callbacks.select(store.getState());
+      }
+    }
+    product[tagName] = cbs;
+  }
+  return product;
 }

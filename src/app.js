@@ -1,9 +1,9 @@
 import { store } from './store.js';
-import { Byu } from './byu.js';
+import { Byu, withRedux } from './byu.js';
 import { openDB } from 'https://unpkg.com/idb@5.0.2/build/esm/index.js?module';
 
-const byu = new Byu(store);
-byu.register({
+const byu = new Byu();
+byu.register(withRedux(store, {
   'app-home': {
     async setupElement() {
       const { Home } = await import('./components/home.js');
@@ -59,13 +59,13 @@ byu.register({
       return { text: state.favourites.map(id => state.team[id].name).join() };
     },
   },
-});
+}));
 
 const appRoot = document.getElementById('app');
 appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
 });
-store.subscribe(() => byu.render(appRoot));
+store.subscribe(() => byu.render(appRoot, store.getState().view));
 
 async function boot() {
   const db = await openDB('app-db', 1, {
