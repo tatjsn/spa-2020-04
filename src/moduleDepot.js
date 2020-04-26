@@ -1,8 +1,9 @@
 export class Module {
-  constructor(tagName, modules, store) {
+  constructor(tagName, modules, store, callbacks) {
     this.tagName = tagName;
     this.modules = modules;
     this.store = store;
+    this.callbacks = callbacks;
   }
 
   connect(Classe, useConnect, useFetch) {
@@ -25,13 +26,13 @@ export class Module {
         if (useConnect) {
           const render = () => {
             if (this.unsubscribe) {
-              this.model = self.select(self.store.getState());
+              this.model = self.callbacks.select(self.store.getState());
             }
           };
           this.unsubscribe = self.store.subscribe(render);
           render();
           if (useFetch) {
-            self.fetchData(self.store.getState(), self.store.dispatch);
+            self.callbacks.fetchData(self.store.getState(), self.store.dispatch);
           }
         }
       }
@@ -49,9 +50,9 @@ export class Module {
     if (customElements.get(this.tagName)) {
       return;
     }
-    const Classe = await this.setupElement();
-    const useSelect = Module.prototype.select !== this.select;
-    const useFetchData = Module.prototype.fetchData !== this.fetchData;
+    const Classe = await this.callbacks.setupElement();
+    const useSelect = this.callbacks.select;
+    const useFetchData = this.callbacks.fetchData;
     const PreparedClass = this.connect(Classe, useSelect, useFetchData);
     customElements.define(this.tagName, PreparedClass);
   }
@@ -72,8 +73,8 @@ export class ModuleDepot {
   }
 
   add(dict) {
-    for (const [tagName, Classe] of Object.entries(dict)) {
-      this.modules[tagName] = new Classe(tagName, this.modules, this.store);
+    for (const [tagName, callbacks] of Object.entries(dict)) {
+      this.modules[tagName] = new Module(tagName, this.modules, this.store, callbacks);
     }
   }
 
