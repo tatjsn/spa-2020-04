@@ -1,9 +1,9 @@
 import { store } from './store.js';
-import { Module, ModuleDepot } from './moduleDepot.js';
+import { Byu } from './byu.js';
 import { openDB } from 'https://unpkg.com/idb@5.0.2/build/esm/index.js?module';
 
-const moduleDepot = new ModuleDepot(store);
-moduleDepot.add({
+const byu = new Byu(store);
+byu.register({
   'app-home': {
     async setupElement() {
       const { Home } = await import('./components/home.js');
@@ -65,7 +65,7 @@ const appRoot = document.getElementById('app');
 appRoot.addEventListener('action', (event) => {
   store.dispatch(event.detail);
 });
-store.subscribe(() => moduleDepot.render(appRoot));
+store.subscribe(() => byu.render(appRoot));
 
 async function boot() {
   const db = await openDB('app-db', 1, {

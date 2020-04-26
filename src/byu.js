@@ -66,13 +66,13 @@ export class Module {
   }
 }
 
-export class ModuleDepot {
+export class Byu {
   constructor(store) {
     this.store = store;
     this.modules = {};
   }
 
-  add(dict) {
+  register(dict) {
     for (const [tagName, callbacks] of Object.entries(dict)) {
       this.modules[tagName] = new Module(tagName, this.modules, this.store, callbacks);
     }
