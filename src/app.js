@@ -69,11 +69,11 @@ store.subscribe(() => moduleDepot.render(appRoot));
 
 async function boot() {
   const db = await openDB('app-db', 1, {
-    async upgrade(db, oldVersion) {
+    upgrade(db, oldVersion) {
       switch (oldVersion) {
         case 0:
           const store = db.createObjectStore('state', {keyPath: 'id'});
-          await store.add({ id: 1, view: 'app-home', viewArg: null });
+          store.add({ id: 1, view: 'app-home', viewArg: null });
       }
     },
   });
