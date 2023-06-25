@@ -11,6 +11,6 @@
   "author": "tatjsn <tatjsn@gmail.com> (https://github.com/tatjsn/)",
   "license": "ISC",
   "dependencies": {
-    "local-web-server": "^4.0.0"
+    "local-web-server": "^5.3.0"
   }
 }
